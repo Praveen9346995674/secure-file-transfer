@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Register</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="stylesheet" href="/Secure_file_transfer/templates/style.css">
+</head>
+<body>
+
+<div class="auth-container">
+
+    <div class="auth-card">
+
+        <h2>📝 Register</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{category}}">{{ message }}</div>
+        {% endfor %}
+        {% endwith %}
+
+        <form method="POST">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <input type="password" name="password" placeholder="Password" required>
+            <button>Register</button>
+        </form>
+
+        <p style="text-align:center;">
+            <a href="/">Already have account?</a>
+        </p>
+
+    </div>
+
+</div>
+
+</body>
+</html>
