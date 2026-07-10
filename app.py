@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, session, send_file,
 from models import db, User, File
 import config
 import bcrypt
-from utils import encrypt_file, decrypt_file, save_file, read_file
+from utils import encrypt_file, decrypt_file, upload_to_s3, download_from_s3
 import io
 
 app = Flask(__name__)
@@ -83,7 +83,7 @@ def upload():
     data = file.read()
 
     encrypted = encrypt_file(data)
-    save_file(encrypted, file.filename)
+    upload_to_s3(encrypted, file.filename)
 
     new_file = File(user_id=session['user_id'], filename=file.filename)
     db.session.add(new_file)
@@ -101,7 +101,7 @@ def download(file_id):
 
     file = File.query.get(file_id)
 
-    encrypted_data = read_file(file.filename)
+    encrypted_data = download_from_s3(file.filename)
     decrypted_data = decrypt_file(encrypted_data)
 
     return send_file(

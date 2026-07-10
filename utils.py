@@ -1,11 +1,9 @@
 import os
+import boto3
 from cryptography.fernet import Fernet
+import config
 
-UPLOAD_FOLDER = "uploads"
 KEY_FILE = "secret.key"
-
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
 
 def load_key():
     if not os.path.exists(KEY_FILE):
@@ -20,18 +18,32 @@ def load_key():
 key = load_key()
 cipher = Fernet(key)
 
+# AWS S3 Client
+s3 = boto3.client(
+    "s3",
+    aws_access_key_id=config.AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=config.AWS_SECRET_ACCESS_KEY,
+    region_name=config.AWS_REGION
+)
+
 def encrypt_file(data):
     return cipher.encrypt(data)
 
 def decrypt_file(data):
     return cipher.decrypt(data)
 
-def save_file(data, filename):
-    path = os.path.join(UPLOAD_FOLDER, filename)
-    with open(path, "wb") as f:
-        f.write(data)
+# Upload encrypted file to AWS S3
+def upload_to_s3(data, filename):
+    s3.put_object(
+        Bucket=config.AWS_BUCKET_NAME,
+        Key=filename,
+        Body=data
+    )
 
-def read_file(filename):
-    path = os.path.join(UPLOAD_FOLDER, filename)
-    with open(path, "rb") as f:
-        return f.read()
+# Download encrypted file from AWS S3
+def download_from_s3(filename):
+    response = s3.get_object(
+        Bucket=config.AWS_BUCKET_NAME,
+        Key=filename
+    )
+    return response["Body"].read()
